@@ -94,7 +94,6 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-library work;
     use work.uart_rx_pkg.all;
 
 entity uart_rx is
