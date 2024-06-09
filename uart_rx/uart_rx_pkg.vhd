@@ -98,7 +98,7 @@ library ieee;
 
 entity uart_rx is
     port (
-        uart_rx_clocks   : in uart_rx_clock_group;
+        clock : in std_logic;
         uart_rx_FPGA_in  : in uart_rx_FPGA_input_group;
         uart_rx_data_in  : in uart_rx_data_input_group;
         uart_rx_data_out : out uart_rx_data_output_group
@@ -106,8 +106,6 @@ entity uart_rx is
 end entity;
 
 architecture rtl of uart_rx is
-
-    alias clock is uart_rx_clocks.clock;
 
     alias clock_in_uart_bit is uart_rx_data_in.number_of_clocks_per_bit;
     signal bit_counter_high : natural;

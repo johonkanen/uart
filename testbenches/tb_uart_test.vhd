@@ -90,14 +90,14 @@ begin
     end process stimulus;	
 ------------------------------------------------------------------------
     u_uart_rx : entity work.uart_rx
-    port map((clock => simulator_clock),
+    port map(simulator_clock,
          (uart_rx => uart_tx_FPGA_out.uart_tx),
     	  uart_rx_data_in,
     	  uart_rx_data_out); 
 
 ------------------------------------------------------------------------
     u_uart_tx : entity work.uart_tx
-    port map((clock => simulator_clock),
+    port map(simulator_clock,
     	  uart_tx_FPGA_out,
     	  uart_tx_data_in,
     	  uart_tx_data_out);

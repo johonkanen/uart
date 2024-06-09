@@ -132,7 +132,7 @@ library ieee;
 
 entity uart_tx is
     port (
-        uart_tx_clocks   : in uart_tx_clock_group;
+        clock : in std_logic;
         uart_tx_FPGA_out : out uart_tx_FPGA_output_group;
         uart_tx_data_in  : in uart_tx_data_input_group;
         uart_tx_data_out : out uart_tx_data_output_group
@@ -140,8 +140,6 @@ entity uart_tx is
 end entity;
 
 architecture rtl of uart_tx is
-
-    alias clock is uart_tx_clocks.clock;
 
     alias clock_in_uart_bit is uart_tx_data_in.number_of_clocks_per_bit;
     signal bit_counter_high : natural;
