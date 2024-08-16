@@ -142,7 +142,6 @@ end entity;
 architecture rtl of uart_tx is
 
     alias clock_in_uart_bit is uart_tx_data_in.number_of_clocks_per_bit;
-    signal bit_counter_high : natural;
     constant total_number_of_transmitted_bits_per_word : natural := 10;
     signal transmit_register : std_logic_vector(9 downto 0) := (others => '1');
     signal transmit_bit_counter : natural range 0 to 2047;
@@ -151,7 +150,6 @@ architecture rtl of uart_tx is
 begin
 
     uart_tx_FPGA_out <= (uart_tx => transmit_register(transmit_register'right));
-    bit_counter_high <= clock_in_uart_bit - 1;
 
 ------------------------------------------------------------------------
     uart_transmitter : process(clock)
@@ -193,10 +191,10 @@ begin
 
                     transmit_data_bit_counter <= 0;
 
-                    transmit_bit_counter <= bit_counter_high;
                     if uart_tx_data_in.uart_transmit_is_requested then
                         load_data_with_start_and_stop_bits_to(transmit_register, uart_tx_data_in.data_to_be_transmitted);
                         uart_transmitter_state := transmit; 
+                        transmit_bit_counter <= clock_in_uart_bit - 1;
                     end if;
 
                 WHEN transmit =>
@@ -206,7 +204,7 @@ begin
                         transmit_bit_counter <= transmit_bit_counter - 1;
                     else
                         transmit_data_bit_counter <= transmit_data_bit_counter + 1;
-                        transmit_bit_counter <= bit_counter_high;
+                        transmit_bit_counter <= clock_in_uart_bit - 1;
                         shift_and_register(transmit_register); 
                         if transmit_data_bit_counter = transmit_register'high then
                             uart_transmitter_state := wait_for_transmit_request;

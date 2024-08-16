@@ -6,10 +6,6 @@ package uart_rx_pkg is
 
     subtype uint12 is integer range 0 to 2**12-1;
 
-    type uart_rx_clock_group is record
-        clock : std_logic;
-    end record;
-    
     type uart_rx_FPGA_input_group is record
         uart_rx : std_logic;
     end record;
@@ -17,6 +13,8 @@ package uart_rx_pkg is
     type uart_rx_data_input_group is record
         number_of_clocks_per_bit : uint12;
     end record;
+
+    constant init_uart_rx : uart_rx_data_input_group := (number_of_clocks_per_bit => 24);
     
     type uart_rx_data_output_group is record
         uart_rx_data : std_logic_vector(7 downto 0);
@@ -108,7 +106,6 @@ end entity;
 architecture rtl of uart_rx is
 
     alias clock_in_uart_bit is uart_rx_data_in.number_of_clocks_per_bit;
-    signal bit_counter_high : natural;
 
     signal receive_register                    : std_logic_vector(9 downto 0)  := (others => '0');
     signal receive_bit_counter                 : natural range 0 to 2047;
@@ -126,7 +123,6 @@ architecture rtl of uart_rx is
 
 begin
 
-    bit_counter_high <= clock_in_uart_bit - 1;
     uart_rx_data_out <= (uart_rx_data                      => received_data,
                         uart_rx_data_transmission_is_ready => uart_rx_data_transmission_is_ready);
 
@@ -179,7 +175,7 @@ begin
                     counter_for_number_of_received_bits <= 0;
                     uart_rx_state <= wait_for_start_bit;
                     if input_buffer(input_buffer'left) = '0' then
-                        receive_bit_counter <= bit_counter_high;
+                        receive_bit_counter <= clock_in_uart_bit - 1;
                         uart_rx_state <= receive_data;
                     end if;
 
@@ -188,7 +184,7 @@ begin
                     if receive_bit_counter > 0 then
                         receive_bit_counter <= receive_bit_counter - 1;
                     else 
-                        receive_bit_counter <= bit_counter_high;
+                        receive_bit_counter <= clock_in_uart_bit - 1;
                         counter_for_number_of_received_bits <= counter_for_number_of_received_bits + 1;
 
                         if counter_for_number_of_received_bits = total_number_of_transmitted_bits_per_word - 1 then
@@ -197,7 +193,7 @@ begin
                             uart_rx_data_transmission_is_ready <= true;
                             received_data <= receive_register(9 downto 2);
                         else 
-                            receive_register <= read_bit_as_1_if_counter_higher_than(bit_counter_high/2-1, counter_for_data_bit) & receive_register(receive_register'left downto 1);
+                            receive_register <= read_bit_as_1_if_counter_higher_than(clock_in_uart_bit - 1/2-1, counter_for_data_bit) & receive_register(receive_register'left downto 1);
                             counter_for_data_bit <= 0;
                         end if;
 
