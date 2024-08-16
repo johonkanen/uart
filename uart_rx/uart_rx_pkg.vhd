@@ -193,7 +193,8 @@ begin
                             uart_rx_data_transmission_is_ready <= true;
                             received_data <= receive_register(9 downto 2);
                         else 
-                            receive_register <= read_bit_as_1_if_counter_higher_than(clock_in_uart_bit - 1/2-1, counter_for_data_bit) & receive_register(receive_register'left downto 1);
+                            receive_register <= 
+                                read_bit_as_1_if_counter_higher_than((clock_in_uart_bit - 1)/4-1, counter_for_data_bit) & receive_register(receive_register'left downto 1);
                             counter_for_data_bit <= 0;
                         end if;
 
