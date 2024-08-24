@@ -147,6 +147,9 @@ architecture rtl of uart_tx is
     signal transmit_bit_counter : natural range 0 to 2047;
     signal transmit_data_bit_counter : natural range 0 to 15; 
 
+    type list_of_uart_transmitter_states is (wait_for_transmit_request, transmit);
+    signal uart_transmitter_state : list_of_uart_transmitter_states := wait_for_transmit_request;
+
 begin
 
     uart_tx_FPGA_out <= (uart_tx => transmit_register(transmit_register'right));
@@ -177,8 +180,6 @@ begin
 
         --------------------------------------------------
 
-        type list_of_uart_transmitter_states is (wait_for_transmit_request, transmit);
-        variable uart_transmitter_state : list_of_uart_transmitter_states := wait_for_transmit_request;
 
     begin
         if rising_edge(clock) then
@@ -187,18 +188,18 @@ begin
             CASE uart_transmitter_state is
 
                 WHEN wait_for_transmit_request =>
-                    uart_transmitter_state := wait_for_transmit_request;
+                    uart_transmitter_state <= wait_for_transmit_request;
 
                     transmit_data_bit_counter <= 0;
 
                     if uart_tx_data_in.uart_transmit_is_requested then
                         load_data_with_start_and_stop_bits_to(transmit_register, uart_tx_data_in.data_to_be_transmitted);
-                        uart_transmitter_state := transmit; 
+                        uart_transmitter_state <= transmit; 
                         transmit_bit_counter <= clock_in_uart_bit - 1;
                     end if;
 
                 WHEN transmit =>
-                    uart_transmitter_state := transmit;
+                    uart_transmitter_state <= transmit;
 
                     if transmit_bit_counter /= 0 then
                         transmit_bit_counter <= transmit_bit_counter - 1;
@@ -207,7 +208,7 @@ begin
                         transmit_bit_counter <= clock_in_uart_bit - 1;
                         shift_and_register(transmit_register); 
                         if transmit_data_bit_counter = transmit_register'high then
-                            uart_transmitter_state := wait_for_transmit_request;
+                            uart_transmitter_state <= wait_for_transmit_request;
                             uart_tx_data_out.uart_tx_is_ready <= true;
                         end if;
                     end if; 
